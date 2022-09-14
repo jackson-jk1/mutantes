@@ -70,8 +70,9 @@ app.MapGet("User", async (AppDbContext db, [FromQuery] string Email, string Pass
         {
             return Results.BadRequest(errors);
         }
-        var u = db.Users.Where(u => u.Email == userDTO.Email && u.Password == userDTO.Password).First();
-        if (!u.Equals(null))
+       
+        User u = db.Users.Where(u => u.Email == userDTO.Email && u.Password == userDTO.Password).FirstOrDefault();
+        if (null != u)
         {
             return Results.Ok(u);
         }
@@ -79,7 +80,7 @@ app.MapGet("User", async (AppDbContext db, [FromQuery] string Email, string Pass
     }
     catch (Exception ex)
     {
-        return Results.NotFound();
+        return Results.NotFound(ex.Message);
     }
 });
 
