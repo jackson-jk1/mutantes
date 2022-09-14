@@ -193,6 +193,37 @@ app.MapGet("Mutant/{id}", async (AppDbContext db, [FromQuery] int id) =>
         return Results.NotFound();
     }
 });
+app.MapGet("Mutants/{id}", async (AppDbContext db, [FromQuery] int id) =>
+{
+    try
+    {
+        
+        if (id.Equals("") || id.Equals(null))
+        {
+            return Results.BadRequest();
+        }
+        var p = db.Users.Find(id);
+        List<Mutant>mutants = db.Mutants.Where(m => m.Professor == p).ToList();
+        char[] delimiterChars = { ';' };
+            mutants.ForEach( m => {
+            m.Abilits = new List<string>();
+            string[] words = m.Abilities.Split(delimiterChars);
+            foreach (var word in words)
+            {
+            if(!word.Equals(""))
+            m.Abilits.Add(word);
+            }
+        });
+        
+        return Results.Ok(mutants);
+
+    }
+    catch (Exception ex)
+    {
+         Console.WriteLine(ex.Message);
+        return Results.NotFound();
+    }
+});
 
 app.MapDelete("Mutant/{id}", async (AppDbContext db, [FromQuery] int id) =>
 {
