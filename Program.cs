@@ -219,6 +219,7 @@ app.MapGet("Mutants", async (AppDbContext db, [FromQuery] int id) =>
             m.Abilits = new List<string>();
             m.Professor = null;
             m.Photo = "Images/" + m.Photo;
+            
             m.Abilits.Add(m.Abilities_one);
             if(m.Abilities_two != null)
             m.Abilits.Add(m.Abilities_two);
@@ -318,7 +319,7 @@ app.MapGet("Mutants/search", async (AppDbContext db, [FromQuery] int id, string 
                m.Abilities_one = result["abilities_one"].ToString();
                m.Abilities_two = result["abilities_two"].ToString();
                m.Abilities_tree = result["abilities_tree"].ToString();
-               m.Photo = "Imagens/" + result["photo"].ToString();
+               m.Photo = "Images/" + result["photo"].ToString();
 
                mutants.Add(m);
             }
