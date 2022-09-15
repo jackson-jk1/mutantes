@@ -6,6 +6,7 @@ using Mutantes.Models;
 using MiniValidation;
 using Biblioteca.Helper;
 using Mutantes.DTO;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
+builder.Services.AddDirectoryBrowser();
 builder.Services.AddDbContext<AppDbContext>(options =>
  options.UseMySql("server=localhost;port=3306;database=mutantes;uid=root;password=''", new MySqlServerVersion(new Version(8, 0, 18))));
 
@@ -27,6 +29,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+           Path.Combine(builder.Environment.ContentRootPath, "Images")),
+    RequestPath = "/Images"
+});
 
 var summaries = new[]
 {
@@ -165,7 +175,7 @@ app.MapPut("Mutant", async (AppDbContext db, MUpdateDTO mutantDTO, int id) =>
     }
 }).Accepts<MUpdateDTO>("multipart/form-data").Produces(200);
 
-app.MapGet("Mutant/{id}", async (AppDbContext db, [FromQuery] int id) =>
+app.MapGet("Mutant", async (AppDbContext db, [FromQuery] int id) =>
 {
     try
     {
@@ -178,6 +188,7 @@ app.MapGet("Mutant/{id}", async (AppDbContext db, [FromQuery] int id) =>
         var m = db.Mutants.Where(m => m.Id == id).Include(p => p.Professor).First();
         char[] delimiterChars = { ';' };
         m.Abilits = new List<string>();
+        m.Photo = "Images/" + m.Photo;
         string[] words = m.Abilities.Split(delimiterChars);
         foreach (var word in words)
         {
@@ -193,7 +204,7 @@ app.MapGet("Mutant/{id}", async (AppDbContext db, [FromQuery] int id) =>
         return Results.NotFound();
     }
 });
-app.MapGet("Mutants/{id}", async (AppDbContext db, [FromQuery] int id) =>
+app.MapGet("Mutants", async (AppDbContext db, [FromQuery] int id) =>
 {
     try
     {
@@ -207,6 +218,8 @@ app.MapGet("Mutants/{id}", async (AppDbContext db, [FromQuery] int id) =>
         char[] delimiterChars = { ';' };
             mutants.ForEach( m => {
             m.Abilits = new List<string>();
+            m.Professor = null;
+            m.Photo = "Images/" + m.Photo;
             string[] words = m.Abilities.Split(delimiterChars);
             foreach (var word in words)
             {
@@ -225,7 +238,7 @@ app.MapGet("Mutants/{id}", async (AppDbContext db, [FromQuery] int id) =>
     }
 });
 
-app.MapDelete("Mutant/{id}", async (AppDbContext db, [FromQuery] int id) =>
+app.MapDelete("Mutant", async (AppDbContext db, [FromQuery] int id) =>
 {
     try
     {

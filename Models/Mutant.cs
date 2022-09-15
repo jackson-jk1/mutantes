@@ -15,7 +15,8 @@ namespace Mutantes.Models
        
        [JsonIgnore]
        public string Abilities {get;set;}
-
+       
+       [JsonIgnore]
        public virtual User? Professor {get;set;}
 
        public List<string> Abilits {get;set;}
