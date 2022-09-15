@@ -17,7 +17,7 @@ builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDirectoryBrowser();
 builder.Services.AddDbContext<AppDbContext>(options =>
- options.UseMySql("server=localhost;port=3306;database=mutantes;uid=root;password=''", new MySqlServerVersion(new Version(8, 0, 18))));
+ options.UseMySql("server=localhost;port=3306;database=mutantes;uid=root;password=''", new MySqlServerVersion(new Version(10,4,24))));
 
 var app = builder.Build();
 
@@ -120,7 +120,7 @@ app.MapPost("Mutant", async (AppDbContext db, MutantDTO mutantDTO) =>
         db.Mutants.Add(m);
         Console.WriteLine("ok");
         db.SaveChanges();
-        return Results.Ok();
+        return Results.Ok("Registrado com sucesso");
 
     }
     catch (Exception ex)
@@ -239,6 +239,58 @@ app.MapGet("Mutants", async (AppDbContext db, [FromQuery] int id) =>
     }
 });
 
+app.MapGet("Mutants/Dashboard", async (AppDbContext db, [FromQuery] int id) =>
+{
+    try
+    {
+        
+        if (id.Equals("") || id.Equals(null))
+        {
+            return Results.BadRequest();
+        }
+        var dash = new Dashboard();
+        using (var command = db.Database.GetDbConnection().CreateCommand())
+        {
+        db.Database.OpenConnection();
+        command.CommandText =
+        "SELECT q.id_criador, q.nome_habilidade, SUM(qtd) quantidade_total" +
+        " FROM (SELECT m.Abilities_one nome_habilidade, m.Name, m.ProfessorId id_criador, COUNT(DISTINCT m.Abilities_one) qtd FROM mutants m WHERE m.Abilities_one <> + \"\" GROUP BY m.Abilities_one, m.Name, m.ProfessorId " +
+        " UNION ALL" +
+        " SELECT m.Abilities_two nome_habilidade, m.Name, m.ProfessorId id_criador, COUNT(DISTINCT m.Abilities_two) qtd FROM mutants m WHERE m.Abilities_two <> \"\" GROUP BY m.Abilities_two, m.Name, m.ProfessorId" +
+        " UNION ALL" +
+        " SELECT m.Abilities_tree nome_habilidade, m.Name, m.ProfessorId id_criador, COUNT(DISTINCT m.Abilities_tree) qtd FROM mutants m WHERE m.Abilities_tree <> \"\" GROUP BY m.Abilities_tree,m.Name, m.ProfessorId" +
+        " ) q" +
+        $" WHERE q.id_criador = {id}" +
+        " GROUP BY q.nome_habilidade, q.id_criador" +
+        " ORDER BY 3 DESC, 2 ASC" +
+        " LIMIT 3;";
+        using (var result = command.ExecuteReader())
+        {
+            dash.top3 = new List<string>();
+           while (result.Read())
+            {
+                dash.top3.Add(result["nome_habilidade"].ToString());
+            }
+        }
+         command.CommandText = $"SELECT m.ProfessorId nome_criador, count(DISTINCT m.Name) quantidade_mutantes FROM mutants m WHERE m.ProfessorId = {id} GROUP BY m.ProfessorId";
+         using (var result = command.ExecuteReader())
+            {
+            while (result.Read())
+                {
+                    dash.num = Int32.Parse(result["quantidade_mutantes"].ToString());
+                }
+            }
+        }
+    
+        return Results.Ok(dash);
+
+    }
+    catch (Exception ex)
+    {
+         Console.WriteLine(ex.Message);
+        return Results.NotFound();
+    }
+});
 app.MapDelete("Mutant", async (AppDbContext db, [FromQuery] int id) =>
 {
     try
