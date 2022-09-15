@@ -14,7 +14,13 @@ namespace Mutantes.Models
        public string? Photo {get;set;}
        
        [JsonIgnore]
-       public string Abilities {get;set;}
+       public string? Abilities_one {get;set;}
+       
+       [JsonIgnore]
+       public string? Abilities_two {get;set;}
+
+       [JsonIgnore]
+       public string? Abilities_tree {get;set;}
        
        [JsonIgnore]
        public virtual User? Professor {get;set;}

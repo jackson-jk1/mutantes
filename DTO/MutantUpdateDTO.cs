@@ -12,9 +12,14 @@ namespace Mutantes.DTO
     {
        public string? Name {get;set;}
        public IFormFile? Photo {get;set;}
-       public string? Abilities {get;set;}
 
        public int ProfessorId {get;set;}
+
+       public string? Abilities_one {get;set;}
+      
+       public string? Abilities_two {get;set;}
+
+       public string? Abilities_tree {get;set;}
 
     public static ValueTask<MUpdateDTO?> BindAsync(HttpContext context,
                                                    ParameterInfo parameter)
@@ -24,8 +29,10 @@ namespace Mutantes.DTO
     
         var firstFile = context.Request.Form.Files.FirstOrDefault();
         var name  = context.Request.Form["name"];
-        var abilities  = context.Request.Form["abilities"];
         var profId = context.Request.Form["professorId"];
+        var ab1 = context.Request.Form["abilities_one"];
+        var ab2 = context.Request.Form["abilities_two"];
+        var ab3 = context.Request.Form["abilities_tree"];
         int idP = 0;
         try{
              idP = Int32.Parse(profId);
@@ -40,8 +47,10 @@ namespace Mutantes.DTO
         {
             Name = name,
             Photo = firstFile,
-            Abilities = abilities,
-            ProfessorId = idP
+            ProfessorId = idP,
+            Abilities_one =ab1,
+            Abilities_two =ab2,
+            Abilities_tree =ab3
             
         });
      }

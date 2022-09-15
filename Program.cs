@@ -106,7 +106,9 @@ app.MapPost("Mutant", async (AppDbContext db, MutantDTO mutantDTO) =>
         ImageHelper image = new ImageHelper();
         var m = new Mutant();
         m.Name =  mutantDTO.Name;
-        m.Abilities = mutantDTO.Abilities;
+        m.Abilities_one = mutantDTO.Abilities_one;
+        m.Abilities_two = mutantDTO.Abilities_two;
+        m.Abilities_tree = mutantDTO.Abilities_tree;
         
         Console.WriteLine(mutantDTO.ProfessorId);
         User U = db.Users.Where(p => p.Id == mutantDTO.ProfessorId).First();
@@ -152,7 +154,7 @@ app.MapPut("Mutant", async (AppDbContext db, MUpdateDTO mutantDTO, int id) =>
         if(mutantDTO.Name == ""){
             return Results.NotFound("Nome não pode ser vazio");
         }
-        if(mutantDTO.Abilities == ""){
+        if(mutantDTO.Abilities_one == ""){
               return Results.NotFound("O mutante deve possuir no minimo uma abilidade");
         }
         User U;
@@ -160,8 +162,9 @@ app.MapPut("Mutant", async (AppDbContext db, MUpdateDTO mutantDTO, int id) =>
              return Results.NotFound("O mutante deve possuir um responsavel");
         }
         m.Name =  mutantDTO.Name;
-        m.Abilities = mutantDTO.Abilities;
-        m.Abilities = mutantDTO.Abilities;
+        m.Abilities_one = mutantDTO.Abilities_one;
+        m.Abilities_two = mutantDTO.Abilities_two;
+        m.Abilities_tree = mutantDTO.Abilities_tree;
         U = db.Users.Where(p => p.Id == mutantDTO.ProfessorId).First();
         db.Mutants.Update(m);
         db.SaveChanges();
@@ -189,12 +192,11 @@ app.MapGet("Mutant", async (AppDbContext db, [FromQuery] int id) =>
         char[] delimiterChars = { ';' };
         m.Abilits = new List<string>();
         m.Photo = "Images/" + m.Photo;
-        string[] words = m.Abilities.Split(delimiterChars);
-        foreach (var word in words)
-        {
-           if(!word.Equals(""))
-           m.Abilits.Add(word);
-        }
+        m.Abilits.Add(m.Abilities_one);
+        if(m.Abilities_two != null)
+        m.Abilits.Add(m.Abilities_two);
+        if(m.Abilities_tree != null)
+        m.Abilits.Add(m.Abilities_tree);
         return Results.Ok(m);
 
     }
@@ -220,12 +222,11 @@ app.MapGet("Mutants", async (AppDbContext db, [FromQuery] int id) =>
             m.Abilits = new List<string>();
             m.Professor = null;
             m.Photo = "Images/" + m.Photo;
-            string[] words = m.Abilities.Split(delimiterChars);
-            foreach (var word in words)
-            {
-            if(!word.Equals(""))
-            m.Abilits.Add(word);
-            }
+            m.Abilits.Add(m.Abilities_one);
+            if(m.Abilities_two != null)
+            m.Abilits.Add(m.Abilities_two);
+            if(m.Abilities_tree != null)
+            m.Abilits.Add(m.Abilities_tree);
         });
         
         return Results.Ok(mutants);
