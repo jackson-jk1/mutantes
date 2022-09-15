@@ -135,10 +135,7 @@ app.MapPut("Mutant", async (AppDbContext db, MUpdateDTO mutantDTO, int id) =>
     try
     {
         
-        if (!MiniValidator.TryValidate(mutantDTO, out var errors))
-        {
-            return Results.BadRequest(errors);
-        }
+       
         if (id.Equals("") || id.Equals(null))
         {
             return Results.BadRequest();
@@ -158,7 +155,7 @@ app.MapPut("Mutant", async (AppDbContext db, MUpdateDTO mutantDTO, int id) =>
               return Results.NotFound("O mutante deve possuir no minimo uma abilidade");
         }
         User U;
-          if(mutantDTO.ProfessorId != 0 ){
+          if(mutantDTO.ProfessorId == 0 ){
              return Results.NotFound("O mutante deve possuir um responsavel");
         }
         m.Name =  mutantDTO.Name;
