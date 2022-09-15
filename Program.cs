@@ -291,6 +291,52 @@ app.MapGet("Mutants/Dashboard", async (AppDbContext db, [FromQuery] int id) =>
         return Results.NotFound();
     }
 });
+
+app.MapGet("Mutants/search", async (AppDbContext db, [FromQuery] int id, string hab) =>
+{
+    try
+    {
+        
+        if (id.Equals("") || id.Equals(null))
+        {
+            return Results.BadRequest();
+        }
+        List<Mutant> mutants = new List<Mutant>();
+        using (var command = db.Database.GetDbConnection().CreateCommand())
+        {
+        db.Database.OpenConnection();
+        command.CommandText =
+         $"SELECT * FROM mutants m WHERE m.ProfessorId = {id} AND ( " +
+         $" LOWER(m.Abilities_one) LIKE  '%{hab}%' OR " +
+         $" LOWER(m.Abilities_two) LIKE  '%{hab}%' OR " +
+         $" LOWER(m.Abilities_tree) LIKE '%{hab}%');";
+      
+        using (var result = command.ExecuteReader())
+        {
+           while (result.Read())
+            {
+              var m = new Mutant();
+               m.Id = Int32.Parse(result["id"].ToString());
+               m.Name = result["name"].ToString();
+               m.Abilities_one = result["abilities_one"].ToString();
+               m.Abilities_two = result["abilities_two"].ToString();
+               m.Abilities_tree = result["abilities_tree"].ToString();
+               m.Photo = "Imagens/" + result["photo"].ToString();
+
+               mutants.Add(m);
+            }
+         }
+        }
+    
+        return Results.Ok(mutants);
+
+    }
+    catch (Exception ex)
+    {
+         Console.WriteLine(ex.Message);
+        return Results.NotFound();
+    }
+});
 app.MapDelete("Mutant", async (AppDbContext db, [FromQuery] int id) =>
 {
     try
